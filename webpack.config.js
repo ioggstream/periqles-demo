@@ -12,7 +12,7 @@ module.exports = {
   devServer: {
     contentBase: path.join(__dirname, 'public'), // static assets: serve html/css
     publicPath: '/dist/', // location of bundle.js
-    port: 8080, // port used in development mode
+    port: 3000, // port used in development mode
     hot: true, // hot module replacement
     open: true, // opens the page when server starts
     // TODO: a more secure setting for allowed origins
@@ -20,6 +20,7 @@ module.exports = {
     historyApiFallback: true, // if 404, serve index.html
     proxy: {
       // '/graphql/*': 'http://localhost:3000',
+      // '/graphql': 'http://172.29.0.3:8000',
       '/graphql': 'http://localhost:3000',
     },
     onListening: function (server) {

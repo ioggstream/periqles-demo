@@ -2,7 +2,6 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 
 import Demo from './components/Demo';
-import Creators from './components/Creators';
 import LogoSection from './components/LogoSection';
 import LinksSection from './components/LinksSection';
 
@@ -19,7 +18,6 @@ if (rootElement) {
       <LogoSection />
       <LinksSection />
       <Demo />
-      <Creators />
     </React.StrictMode>,
     rootElement,
   );
