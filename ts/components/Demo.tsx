@@ -9,28 +9,88 @@ URI = "http://172.29.0.3:8000/";
 
 const client: ApolloClient<NormalizedCacheObject> = new ApolloClient({cache, uri: URI});
 
-const Example = (props) => {
-  const [implementation, setImplementation] = useState(props.value);
-  const handleKeyDown = (e) => {
-    console.log("value", e.target.value, props);
-    if (e.key === "Enter") {
-      console.log("do validate", e.target.value, implementation);
-      props.value = implementation;
-      props.onChange(implementation); // trigger callback
-    }
-  };
+const PostForm = (props) => {
+  const [qform, setQForm] = useState({qname: "activities", qfilter: ""});
 
-  return (<div id="implementation-query">
-    Ciao:
+  const submit = (e) => {
+    e.preventDefault();
+    props.handleSubmit(qform);
+  };
+  console.log(props);
+
+  return (<form onSubmit={submit}>
     <label>
-      Implementation:
-      <input type="text" value={implementation} onChange={e => setImplementation(e.target.value)} onKeyDown={handleKeyDown}/>
+      qname:
+      <input type="text" value={qform.qname} onChange={e => setQForm({
+          ...qform,
+          qname: e.target.value
+        })
+}/>
     </label>
-  </div>);
+    <label>
+      qfilter
+      <input type="text" value={qform.qfilter} onChange={e => setQForm({
+          ...qform,
+          qfilter: e.target.value
+        })
+}/>
+    </label>
+    <input type="submit" value={"Cerca"}/>
+    <h1>
+      {qform.qname}
+      / {qform.qfilter}
+    </h1>
+  </form>);
 };
 
+const renderQuery = (qform) => {
+  const queries = {
+    activities: {
+      query: gql `
+        query Activities($done: Int) {
+          activities(done: $done) {
+            done
+            name
+            dimension
+            subdimension
+          }
+        }
+      `,
+      options: {
+        variables: {}
+      }
+    },
+    dimensions: {
+      query: gql `
+        query Dimensions {
+          dimension {
+            name
+          }
+        }
+      `,
+      options: {}
+    },
+    implementations: {
+      query: gql `
+        query Implementations($name: String) {
+          implementations(name: $name) {
+            name
+            url
+            topics
+            tags
+          }
+        }
+      `,
+      options: {}
+    }
+  };
+  return (<ApolloProvider client={client}>
+    <GQLTable query={queries[qform.qname]["query"]}/>
+  </ApolloProvider>);
+};
 const Demo = (): JSX.Element => {
-  const [relay, setRelay] = useState(true);
+  const [done, setDone] = useState(true);
+  let qfilter = "";
 
   const queries = {
     activities: {
@@ -46,7 +106,7 @@ const Demo = (): JSX.Element => {
       `,
       options: {
         variables: {
-          done: relay
+          done: done
             ? 1
             : 0
         }
@@ -61,40 +121,47 @@ const Demo = (): JSX.Element => {
         }
       `,
       options: {}
+    },
+    implementations: {
+      query: gql `
+        query Implementations($name: String) {
+          implementations(name: $name) {
+            name
+            url
+            topics
+            tags
+          }
+        }
+      `,
+      options: {
+        variables: {
+          name: qfilter || ""
+        }
+      }
     }
   };
+  const [data, setData] = useState({qname: "activities", qfilter: ""});
 
-  const [qname, setQname] = useState("activities");
-  function handleQname(q) {
-    console.log("qname", q);
-    setQname(q);
-  }
   return (<main className="Demo">
     {
-      relay
+      done
         ? <h1>Done</h1>
         : <h1>Undone</h1>
     }
     <div id="client-switch">
       Show undone
       <label className="switch">
-        <input type="checkbox" checked={relay} onChange={e => setRelay(e.target.checked)}/>
+        <input type="checkbox" checked={done} onChange={e => setDone(e.target.checked)}/>
         <span className="slider round"></span>
       </label>
       Show done
     </div>
 
-    <p>
-      <small>
-        <i>
-          This site is just for demonstration purposes. Please don't enter personal information.
-        </i>
-      </small>
-    </p>
-    <ApolloProvider client={client}>
-      <GQLTable query={queries[qname]["query"]} options={queries[qname]["options"]}/>
-    </ApolloProvider>
-    <Example value={qname} onChange={handleQname}/>
+    <PostForm queries={queries} handleSubmit={formData => {
+        console.log(formData);
+        setData(formData);
+      }}></PostForm>
+    {data && renderQuery(data)}
   </main>);
 };
 

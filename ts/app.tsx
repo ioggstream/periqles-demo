@@ -15,7 +15,6 @@ if (rootElement) {
         {/* header returns user to top of page on click */}
         <h1><a href="#">periqles</a></h1>
       </header>
-      <LogoSection />
       <LinksSection />
       <Demo />
     </React.StrictMode>,
