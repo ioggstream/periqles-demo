@@ -1,10 +1,12 @@
-import React from "react";
+import React, {forwardRef, useRef} from "react";
 import styled from "styled-components";
 import {
   useTable,
   useFilters,
   useGlobalFilter,
-  useAsyncDebounce
+  useAsyncDebounce,
+  usePagination,
+  useRowSelect
 } from "react-table";
 // A great library for fuzzy filtering/sorting items
 
@@ -135,6 +137,31 @@ const getColumns = (data, parent="") => {
             }
         )
 };
+interface Props {
+  indeterminate?: boolean;
+  name: string;
+}
+
+const IndeterminateCheckbox = forwardRef<HTMLInputElement, Props>(
+  ({ indeterminate, ...rest }, ref) => {
+    const defaultRef = useRef(null);
+    const resolvedRef = ref || defaultRef;
+
+    React.useEffect(() => {
+        if (typeof resolvedRef === 'object' && resolvedRef.current) {
+        resolvedRef.current.indeterminate = Boolean(indeterminate);
+        }
+
+    }, [resolvedRef, indeterminate])
+
+    return (
+      <>
+        <input type="checkbox" ref={resolvedRef} {...rest} />
+      </>
+    )
+  }
+)
+
 // Our table component
 export default function TableSearch({ data }) {
   data = React.useMemo(
@@ -181,10 +208,26 @@ export default function TableSearch({ data }) {
     headerGroups,
     rows,
     prepareRow,
-    state,
     visibleColumns,
+    // filters
     preGlobalFilteredRows,
-    setGlobalFilter
+    setGlobalFilter,
+    
+    // selectable
+    selectedFlatRows,
+
+    // pagination
+    page,
+    canPreviousPage,
+    canNextPage,
+    pageOptions,
+    pageCount,
+    gotoPage,
+    nextPage,
+    previousPage,
+    setPageSize,
+    state,
+
   } = useTable(
     {
       columns,
@@ -193,13 +236,39 @@ export default function TableSearch({ data }) {
       filterTypes
     },
     useFilters, // useFilters!
-    useGlobalFilter // useGlobalFilter!
+    useGlobalFilter, // useGlobalFilter!
+    usePagination,
+    useRowSelect,
+    hooks => {
+      hooks.visibleColumns.push(columns => [
+        // Let's make a column for selection
+        {
+          id: 'selection',
+          // The header can use the table's getToggleAllRowsSelectedProps method
+          // to render a checkbox
+          Header: ({ getToggleAllRowsSelectedProps }) => (
+            <div>
+              <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
+            </div>
+          ),
+          // The cell can use the individual row's getToggleRowSelectedProps method
+          // to the render a checkbox
+          Cell: ({ row }) => (
+            <div>
+              <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+            </div>
+          ),
+        },
+        ...columns,
+      ])
+    }
+
   );
 
   // We don't want to render all of the rows for this example, so cap
   // it for this use case
   const firstPageRows = rows.slice(0, 30);
-
+  console.log("state", state);
   const renderCell = (cell) => {
     if (Array.isArray(cell.value)) {
         return JSON.stringify(cell.value);
@@ -208,7 +277,6 @@ export default function TableSearch({ data }) {
     console.log("render cell", ret);
     return ret;
   };
-
   console.log("TableSearch: rendering table");
   return (
     <>
@@ -241,7 +309,7 @@ export default function TableSearch({ data }) {
           </tr>
         </thead>
         <tbody {...getTableBodyProps()}>
-          {firstPageRows.map((row, i) => {
+          {page.map((row, i) => {
               console.log("preparing row: ", row);
             prepareRow(row);
             console.log("Prepared row:", row);
@@ -258,12 +326,31 @@ export default function TableSearch({ data }) {
         </tbody>
       </table>
       <br />
-      <div>Showing the first 20 results of {rows.length} rows</div>
+      <div>Showing the first results of {rows.length} rows</div>
       <div>
         <pre>
           <code>{JSON.stringify(state.filters, null, 2)}</code>
         </pre>
       </div>
+
+                <div className="pagination">
+        <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
+          {'<<'}
+        </button>{' '}
+        <button onClick={() => previousPage()} disabled={!canPreviousPage}>
+          {'<'}
+        </button>{' '}
+        <button onClick={() => nextPage()} disabled={!canNextPage}>
+          {'>'}
+        </button>{' '}
+        <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
+          {'>>'}
+        </button>{' '}
+        <span>
+          Page{' '}
+        </span>
+        </div>
+
     </>
   );
 }
