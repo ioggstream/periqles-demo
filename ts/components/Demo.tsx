@@ -3,14 +3,33 @@ import GQLTable from "./GQLTable";
 
 import {gql, ApolloClient, NormalizedCacheObject, ApolloProvider} from "@apollo/client";
 import {cache} from "../apolloCache";
+import TableSearch from "./TableSearch";
+import {queries} from "./queries";
 
 let URI = "";
 URI = "http://172.29.0.3:8000/";
 
 const client: ApolloClient<NormalizedCacheObject> = new ApolloClient({cache, uri: URI});
 
+const renderQuery = (qform) => {
+  var options = {};
+  if (qform.done) {
+    options = {
+      variables: {
+        done: qform.done
+          ? 1
+          : 0
+      }
+    };
+  }
+  return (<ApolloProvider client={client}>
+    <GQLTable query={queries[qform.name]["query"]} options={options}/>
+  </ApolloProvider>);
+};
+
+
 const PostForm = (props) => {
-  const [qform, setQForm] = useState({qname: "activities", qfilter: ""});
+  const [qform, setQForm] = useState({name: "activities", filter: "", done: false});
 
   const submit = (e) => {
     e.preventDefault();
@@ -19,149 +38,98 @@ const PostForm = (props) => {
   console.log(props);
 
   return (<form onSubmit={submit}>
+    <h1>
+      {qform.name}/ {qform.filter}/ {qform.done}
+      {
+        qform.done
+          ? <h1>Done</h1>
+          : <h1>Undone</h1>
+      }
+    </h1>
     <label>
       qname:
-      <input type="text" value={qform.qname} onChange={e => setQForm({
+      <input type="text" value={qform.name} onChange={e => setQForm({
           ...qform,
-          qname: e.target.value
+          name: e.target.value
         })
 }/>
     </label>
     <label>
       qfilter
-      <input type="text" value={qform.qfilter} onChange={e => setQForm({
+      <input type="text" value={qform.filter} onChange={e => setQForm({
           ...qform,
-          qfilter: e.target.value
+          filter: e.target.value
         })
 }/>
     </label>
+
+    <label className="switch">
+      <input type="checkbox" checked={qform.done} onChange={e => setQForm({
+          ...qform,
+          done: e.target.checked
+        })
+}/>
+      <span className="slider round"></span>
+    </label>
+
     <input type="submit" value={"Cerca"}/>
-    <h1>
-      {qform.qname}
-      / {qform.qfilter}
-    </h1>
   </form>);
 };
 
-const renderQuery = (qform) => {
-  const queries = {
-    activities: {
-      query: gql `
-        query Activities($done: Int) {
-          activities(done: $done) {
-            done
-            name
-            dimension
-            subdimension
-          }
-        }
-      `,
-      options: {
-        variables: {}
-      }
-    },
-    dimensions: {
-      query: gql `
-        query Dimensions {
-          dimension {
-            name
-          }
-        }
-      `,
-      options: {}
-    },
-    implementations: {
-      query: gql `
-        query Implementations($name: String) {
-          implementations(name: $name) {
-            name
-            url
-            topics
-            tags
-          }
-        }
-      `,
-      options: {}
-    }
-  };
-  return (<ApolloProvider client={client}>
-    <GQLTable query={queries[qform.qname]["query"]}/>
-  </ApolloProvider>);
-};
+
 const Demo = (): JSX.Element => {
   const [done, setDone] = useState(true);
-  let qfilter = "";
 
-  const queries = {
-    activities: {
-      query: gql `
-        query Activities($done: Int) {
-          activities(done: $done) {
-            done
-            name
-            dimension
-            subdimension
-          }
-        }
-      `,
-      options: {
-        variables: {
-          done: done
-            ? 1
-            : 0
-        }
-      }
-    },
-    dimensions: {
-      query: gql `
-        query Dimensions {
-          dimension {
-            name
-          }
-        }
-      `,
-      options: {}
-    },
-    implementations: {
-      query: gql `
-        query Implementations($name: String) {
-          implementations(name: $name) {
-            name
-            url
-            topics
-            tags
-          }
-        }
-      `,
-      options: {
-        variables: {
-          name: qfilter || ""
-        }
-      }
-    }
-  };
-  const [data, setData] = useState({qname: "activities", qfilter: ""});
+  const [data, setData] = useState({name: "activities", filter: ""});
 
-  return (<main className="Demo">
+  const testdata = [
     {
-      done
-        ? <h1>Done</h1>
-        : <h1>Undone</h1>
+      __typename: "Activity",
+      done: 1,
+      name: "Building and testing of artifacts in virtual environments",
+      dimension: "Build and Deployment",
+      subdimension: "Build",
+      implementation: [{
+        name: "foo",
+        __typename: "Implementation"
+      }]
+    }, {
+      __typename: "Activity",
+      done: 0,
+      name: "Defined build process",
+      dimension: "Build and Deployment",
+      subdimension: "Build",
+      implementation: [{
+        name: "foo",
+        __typename: "Implementation"
+      }]
+    }, {
+      __typename: "Activity",
+      done: 0,
+      name: "Signing of artifacts",
+      dimension: "Build and Deployment",
+      subdimension: "Build",
+      implementation: [{
+        name: "foo",
+        __typename: "Implementation"
+      }]
     }
-    <div id="client-switch">
-      Show undone
-      <label className="switch">
-        <input type="checkbox" checked={done} onChange={e => setDone(e.target.checked)}/>
-        <span className="slider round"></span>
-      </label>
-      Show done
+  ];
+  return (<main className="Demo">
+    <div id="client-switch">Show undone Show done</div>
+    <div>
+      <input type="button" onClick={() => setData({name: "activities", filter: ""})} value="Activities"/>
+      <input type="button" onClick={() => setData({name: "implementations", filter: ""})} value="Implementations"/>
+      <input type="button" onClick={() => setData({name: "activities_implementation", filter: ""})
+} value="Activities with Implementation"/>
     </div>
-
-    <PostForm queries={queries} handleSubmit={formData => {
+    <PostForm handleSubmit={formData => {
         console.log(formData);
         setData(formData);
       }}></PostForm>
-    {data && renderQuery(data)}
+
+    {/*<TableSearch data={testdata}/>*/}
+     {data && renderQuery(data)}
   </main>);
 };
 
