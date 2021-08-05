@@ -144,10 +144,10 @@ const IndeterminateCheckbox = forwardRef<HTMLInputElement, Props>(({
     }
   }, [resolvedRef, indeterminate]);
 
-    console.log("indet", indeterminate,"rest", rest);
   return (
   <> <input type="checkbox" ref={resolvedRef} {...rest} /> </>);
 });
+
 
 // Our table component
 export default function TableSearch({
@@ -222,13 +222,27 @@ export default function TableSearch({
         // The cell can use the individual row's getToggleRowSelectedProps method
         // to the render a checkbox
         Cell: ({row}) => {
+            
+            /**
+             * Override toggleRowSelected to update `done` on toggle.
+             */
+            const f = row.toggleRowSelected;
+            row.toggleRowSelected = (e) => {
+                console.log("toggleRowSelected", e); 
+                if (e != Boolean(row.values.done)) {
+                    row.values.done = e ? 1 : 0;
+                }
+                f(e);
+            };
             const v = Boolean(row.values.done) || false;
             console.log("selected:", v);
             if (v && !row.getToggleRowSelectedProps().checked) {
                 row.toggleRowSelected(true);
             }
+            const props = row.getToggleRowSelectedProps();
+            console.debug("props", props);
             return (<div>
-          <IndeterminateCheckbox {...row.getToggleRowSelectedProps()}
+          <IndeterminateCheckbox {...props}
              />
         </div>)}
       },
@@ -287,12 +301,7 @@ export default function TableSearch({
         console.log("preparing row: ", row);
         prepareRow(row);
         console.log("Prepared row:", row);
-        try { 
-            row.getToggleRowSelectedProps().checked = true;
-            console.log(row.getToggleRowSelectedProps().checked); 
-        } catch (e){
-            console.log(e);
-        }
+        
         return (<tr {...row.getRowProps()}>
           {
             row.cells.map((cell) => {
