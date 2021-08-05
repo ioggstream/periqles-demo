@@ -4,7 +4,6 @@ import {gql, useQuery, useMutation} from "@apollo/client";
 import {PrismLight as SyntaxHighlighter} from "react-syntax-highlighter";
 import jsx from "react-syntax-highlighter/dist/esm/languages/prism/jsx";
 import js from "react-syntax-highlighter/dist/esm/languages/prism/graphql";
-import TableComponent from "./TableComponent";
 import TableSearch from "./TableSearch";
 import styled from "styled-components";
 
@@ -17,6 +16,7 @@ export default function GQLTable({
 }) {
   const [updated, setUpdate] = useState(false);
   const {data, loading, error, refetch} = useQuery(query, options);
+  const [selectedRows, setSelectedRows] = useState([]);
   console.log("query", query, "options", options);
 
   const Styles = styled.div `
@@ -63,7 +63,10 @@ export default function GQLTable({
         {
           data && Object.entries(data)
             ? (Object.entries(data).map((k, v) => 
-            <Styles><TableSearch data={k[1]}/>
+            <Styles>
+              <button onClick={() => console.log(selectedRows)} className="action"/>
+
+              <TableSearch data={k[1]} onRowSelect={(rows) => setSelectedRows(rows)}/>
             </Styles>
             ))
             : (<p>Sign up...</p>)
