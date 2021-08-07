@@ -8,6 +8,8 @@ import {
   usePagination,
   useRowSelect
 } from "react-table";
+import IndeterminateCheckbox from './IndeterminateCheckbox';
+
 // A great library for fuzzy filtering/sorting items
 
 const Styles = styled.div `
@@ -126,27 +128,6 @@ const getColumns = (data, parent = "") => {
     return h;
   });
 };
-interface Props {
-  indeterminate?: boolean;
-  name: string;
-}
-
-const IndeterminateCheckbox = forwardRef<HTMLInputElement, Props>(({
-  indeterminate,
-  ...rest
-}, ref) => {
-  const defaultRef = useRef(null);
-  const resolvedRef = ref || defaultRef;
-
-  React.useEffect(() => {
-    if (typeof resolvedRef === "object" && resolvedRef.current) {
-      resolvedRef.current.indeterminate = Boolean(indeterminate);
-    }
-  }, [resolvedRef, indeterminate]);
-
-  return (
-  <> <input type="checkbox" ref={resolvedRef} {...rest} /> </>);
-});
 
 
 // Our table component
@@ -250,16 +231,7 @@ export default function TableSearch({
     ]);
   });
 
-  // We don't want to render all of the rows for this example, so cap
-  // it for this use case
-  const firstPageRows = rows.slice(0, 30);
-  console.log("state", state);
-
   console.log("TableSearch: rendering table");
-
-  /* 
-  React.useEffect(() => { onRowSelect(selectedFlatRows); }, [onRowSelect, selectedFlatRows]);
-  */
   return (<> < pre > <code>
     {
       JSON.stringify({
