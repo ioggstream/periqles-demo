@@ -1,4 +1,4 @@
-import React, {forwardRef, useRef} from "react";
+import React, { forwardRef, useRef } from "react";
 import styled from "styled-components";
 import {
   useTable,
@@ -13,7 +13,7 @@ import TablePagination from './TablePagination';
 
 // A great library for fuzzy filtering/sorting items
 
-const Styles = styled.div `
+const Styles = styled.div`
   padding: 1rem;
 
   table {
@@ -43,7 +43,7 @@ const Styles = styled.div `
 `;
 
 // Define a default UI for filtering
-function GlobalFilter({preGlobalFilteredRows, globalFilter, setGlobalFilter}) {
+function GlobalFilter({ preGlobalFilteredRows, globalFilter, setGlobalFilter }) {
   const count = preGlobalFilteredRows.length;
   const [value, setValue] = React.useState(globalFilter);
   const onChange = useAsyncDebounce((value) => {
@@ -53,12 +53,12 @@ function GlobalFilter({preGlobalFilteredRows, globalFilter, setGlobalFilter}) {
   return (<span>
     Search:{" "}
     <input value={value || ""} onChange={e => {
-        setValue(e.target.value);
-        onChange(e.target.value);
-      }} placeholder={`${count} records...`} style={{
-        fontSize: "1.1rem",
-        border: "0"
-      }}/>
+      setValue(e.target.value);
+      onChange(e.target.value);
+    }} placeholder={`${count} records...`} style={{
+      fontSize: "1.1rem",
+      border: "0"
+    }} />
   </span>);
 }
 
@@ -73,8 +73,8 @@ function DefaultColumnFilter({
   const count = preFilteredRows.length;
 
   return (<input value={filterValue || ""} onChange={e => {
-      setFilter(e.target.value || undefined); // Set undefined to remove the filter entirely
-    }} placeholder={`Search ${count} records...`}/>);
+    setFilter(e.target.value || undefined); // Set undefined to remove the filter entirely
+  }} placeholder={`Search ${count} records...`} />);
 }
 
 const get_renderer = (obj) => {
@@ -84,7 +84,7 @@ const get_renderer = (obj) => {
 
   try {
     return gql_render[obj[0]["__typename"]];
-  } catch  {
+  } catch {
     return (i) => i;
   }
 };
@@ -130,7 +130,7 @@ const getColumns = (data, parent = "") => {
   });
 };
 
-function isEmpty(e){
+function isEmpty(e) {
   return Boolean(Object.keys(Object(e)).length);
 }
 
@@ -192,139 +192,140 @@ export default function TableSearch({
     setPageSize,
     state,
   } = useTable({
-    columns, 
-    data, 
+    columns,
+    data,
     defaultColumn, // defaultColumn has a filter enabled via DefaultColumnFilter
     filterTypes,
-  }, 
+    initialState: {pageSize: 50}
+  },
     useFilters, // useFilters!
     useGlobalFilter, // useGlobalFilter!
-    usePagination, 
-    useRowSelect, 
+    usePagination,
+    useRowSelect,
     (hooks) => {
-    hooks.visibleColumns.push((columns) => hasSelectableColumn ? [
-      // Let's make a column for selection
-      {
-        id: "selection",
-        // The header can use the table's getToggleAllRowsSelectedProps method
-        // to render a checkbox
-        Header: ({getToggleAllRowsSelectedProps}) => (<div>
-          <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()}/>
-        </div>),
-        // The cell can use the individual row's getToggleRowSelectedProps method
-        // to the render a checkbox
-        Cell: ({row}) => {
-            
+      hooks.visibleColumns.push((columns) => hasSelectableColumn ? [
+        // Let's make a column for selection
+        {
+          id: "selection",
+          // The header can use the table's getToggleAllRowsSelectedProps method
+          // to render a checkbox
+          Header: ({ getToggleAllRowsSelectedProps }) => (<div>
+            <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
+          </div>),
+          // The cell can use the individual row's getToggleRowSelectedProps method
+          // to the render a checkbox
+          Cell: ({ row }) => {
+
             /**
              * Override row.toggleRowSelected to update `done` on toggle.
              */
             const f = row.toggleRowSelected;
             row.toggleRowSelected = (e) => {
-                state.changedRows = state.changedRows ? state.changedRows : {};
-                console.log("toggleRowSelected", row.values, e); 
+              state.changedRows = state.changedRows ? state.changedRows : {};
+              console.log("toggleRowSelected", row.values, e);
 
-                if (e != Boolean(row.values.done)) {
-                    row.values.done = e ? 1 : 0;
-                    state.changedRows[row.values.name] = row.values.done;
-                }
-                f(e);
+              if (e != Boolean(row.values.done)) {
+                row.values.done = e ? 1 : 0;
+                state.changedRows[row.values.name] = row.values.done;
+              }
+              f(e);
             };
 
             // Call toggleRowSelected when needed.
             const v = Boolean(row.values.done) || false;
             console.debug("renderingSelectionColumn:", row.values.name, v);
             if (v != row.getToggleRowSelectedProps().checked) {
-                row.toggleRowSelected(v);
+              row.toggleRowSelected(v);
             }
 
             const props = row.getToggleRowSelectedProps();
             console.debug("props", props);
             return (<div>
-          <IndeterminateCheckbox {...props}
-             />
-        </div>)}
-      },
-      ...columns
-    ] : columns
-    );
-  });
+              <IndeterminateCheckbox {...props}
+              />
+            </div>)
+          }
+        },
+        ...columns
+      ] : columns
+      );
+    });
 
   console.log("TableSearch: rendering table");
   return (<>
-  {isEmpty(state.changedRows) && 
-    <button onClick={() => {
-      onRowSelect(state.changedRows)}
+    {isEmpty(state.changedRows) &&
+      <button onClick={() => {
+        onRowSelect(state.changedRows)
+      }
       } className="action" value="CLICCAMI">SAVE</button>
 
-  }
-<table {...getTableProps()}>
-  <thead>
-    {
-      headerGroups.map((headerGroup) => (<tr {...headerGroup.getHeaderGroupProps()}>
+    }
+    <table {...getTableProps()}>
+      <thead>
         {
-          headerGroup.headers.map((column) => (<th {...column.getHeaderProps()}>
-            {column.render("Header")}
-            {/* Render the columns filter UI */}
-            <div>{
-                column.canFilter
-                  ? column.render("Filter")
-                  : null
-              }</div>
-          </th>))
+          headerGroups.map((headerGroup) => (<tr {...headerGroup.getHeaderGroupProps()}>
+            {
+              headerGroup.headers.map((column) => (<th {...column.getHeaderProps()}>
+                {column.render("Header")}
+                {/* Render the columns filter UI */}
+                <div>{
+                  column.canFilter
+                    ? column.render("Filter")
+                    : null
+                }</div>
+              </th>))
+            }
+          </tr>))
         }
-      </tr>))
-    }
-    <tr>
-      <th colSpan={visibleColumns.length} style={{
-          textAlign: "left"
-        }}>
-        <GlobalFilter preGlobalFilteredRows={preGlobalFilteredRows} 
-        globalFilter={state.globalFilter} setGlobalFilter={setGlobalFilter}/>
-      </th>
-    </tr>
-  </thead>
-  <tbody {...getTableBodyProps()}>
-    {
-      page.map((row, i) => {
-        console.debug("preparing row: ", row);
-        prepareRow(row);
-        console.debug("Prepared row:", row);
-        
-        return (<tr {...row.getRowProps()}>
-          {
-            row.cells.map((cell) => {
-              return (<td {...cell.getCellProps()}>{cell.render("Cell")}</td>);
-            })
-          }
-        </tr>);
-      })
-    }
-  </tbody>
-</table>
-<br/>
-<div>Showing the first results of { rows.length } rows</div> 
-< div > <pre>
-          <code>{JSON.stringify(state.filters, null, 2)}</code>
-        </pre>
-</div>
-<TablePagination gotoPage={gotoPage} previousPage={previousPage}
-canPreviousPage={canPreviousPage}
-canNextPage={canNextPage}
-pageCount={pageCount}
-nextPage={nextPage}
+        <tr>
+          <th colSpan={visibleColumns.length} style={{
+            textAlign: "left"
+          }}>
+            <GlobalFilter preGlobalFilteredRows={preGlobalFilteredRows}
+              globalFilter={state.globalFilter} setGlobalFilter={setGlobalFilter} />
+          </th>
+        </tr>
+      </thead>
+      <tbody {...getTableBodyProps()}>
+        {
+          page.map((row, i) => {
+            console.debug("preparing row: ", row);
+            prepareRow(row);
+            console.debug("Prepared row:", row);
 
-/>
+            return (<tr {...row.getRowProps()}>
+              {
+                row.cells.map((cell) => {
+                  return (<td {...cell.getCellProps()}>{cell.render("Cell")}</td>);
+                })
+              }
+            </tr>);
+          })
+        }
+      </tbody>
+    </table>
+    <br />
+    <div>Showing the first results of {rows.length} rows</div>
+    < div > <pre>
+      <code>{JSON.stringify(state.filters, null, 2)}</code>
+    </pre>
+    </div>
+    <TablePagination gotoPage={gotoPage} previousPage={previousPage}
+      canPreviousPage={canPreviousPage}
+      canNextPage={canNextPage}
+      pageCount={pageCount}
+      nextPage={nextPage}
 
+    />
 
-
-         < pre > <code>
-    {
-      JSON.stringify({
-        selectedRowIds: state.selectedRowIds,
-        "selectedFlatRows[].original": selectedFlatRows.map((d) => d.original.name)
-      }, null, 2)
-    }
-  </code>
-</pre>
-</>);
+    < pre > <code>
+      {
+        JSON.stringify({
+          selectedRowIds: state.selectedRowIds,
+          "selectedFlatRows[].original": selectedFlatRows.map((d) => d.original.name)
+        }, null, 2)
+      }
+    </code>
+    </pre>
+  </>);
 }
