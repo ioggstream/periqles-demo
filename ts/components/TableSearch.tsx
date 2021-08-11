@@ -9,6 +9,7 @@ import {
   useRowSelect
 } from "react-table";
 import IndeterminateCheckbox from './IndeterminateCheckbox';
+import TablePagination from './TablePagination';
 
 // A great library for fuzzy filtering/sorting items
 
@@ -136,6 +137,7 @@ function isEmpty(e){
 // Our table component
 export default function TableSearch({
   data,
+  selectField = "done",
   onRowSelect = console.log,
 }) {
   data = React.useMemo(() => flatten(data), []);
@@ -144,6 +146,7 @@ export default function TableSearch({
   const columns = React.useMemo(() => getColumns(data), []);
   console.log("TableSearch.columns", columns);
 
+  const hasSelectableColumn = columns[0]["accessor"] == selectField;
   const filterTypes = React.useMemo(() => ({
     // Add a new fuzzyTextFilterFn filter type.
     // Or, override the default text filter to use
@@ -199,7 +202,7 @@ export default function TableSearch({
     usePagination, 
     useRowSelect, 
     (hooks) => {
-    hooks.visibleColumns.push((columns) => [
+    hooks.visibleColumns.push((columns) => hasSelectableColumn ? [
       // Let's make a column for selection
       {
         id: "selection",
@@ -242,7 +245,8 @@ export default function TableSearch({
         </div>)}
       },
       ...columns
-    ]);
+    ] : columns
+    );
   });
 
   console.log("TableSearch: rendering table");
@@ -298,39 +302,19 @@ export default function TableSearch({
   </tbody>
 </table>
 <br/>
-<div>Showing the first results of {
-    rows.length
-}
-rows</div> < div > <pre>
+<div>Showing the first results of { rows.length } rows</div> 
+< div > <pre>
           <code>{JSON.stringify(state.filters, null, 2)}</code>
         </pre>
 </div>
+<TablePagination gotoPage={gotoPage} previousPage={previousPage}
+canPreviousPage={canPreviousPage}
+canNextPage={canNextPage}
+pageCount={pageCount}
+nextPage={nextPage}
 
-<div className="pagination">
-<button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
-  {"<<"}
-</button>
-  {" "} < button onClick = {
-  () => previousPage()
-}
-disabled = {
-  !canPreviousPage
-} > {
-  "<"
-} </button>{" "}
-        <button onClick={() => nextPage()} disabled={!canNextPage}>
-          {">"}
-        </button > {
-  " "
-} <button onClick = {
-  () => gotoPage(pageCount - 1)
-}
-disabled = {
-  !canNextPage
-} > {
-  ">>"
-} </button>{" "}
-        <span>Page </span > </div>
+/>
+
 
 
          < pre > <code>

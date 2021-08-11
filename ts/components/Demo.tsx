@@ -28,55 +28,6 @@ const renderQuery = (qform) => {
 };
 
 
-const PostForm = (props) => {
-  const [qform, setQForm] = useState({name: "activities", filter: "", done: false});
-
-  const submit = (e) => {
-    e.preventDefault();
-    props.handleSubmit(qform);
-  };
-  console.log(props);
-
-  return (<form onSubmit={submit}>
-    <h1>
-      {qform.name}/ {qform.filter}/ {qform.done}
-      {
-        qform.done
-          ? <h1>Done</h1>
-          : <h1>Undone</h1>
-      }
-    </h1>
-    <label>
-      qname:
-      <input type="text" value={qform.name} onChange={e => setQForm({
-          ...qform,
-          name: e.target.value
-        })
-}/>
-    </label>
-    <label>
-      qfilter
-      <input type="text" value={qform.filter} onChange={e => setQForm({
-          ...qform,
-          filter: e.target.value
-        })
-}/>
-    </label>
-
-    <label className="switch">
-      <input type="checkbox" checked={qform.done} onChange={e => setQForm({
-          ...qform,
-          done: e.target.checked
-        })
-}/>
-      <span className="slider round"></span>
-    </label>
-
-    <input type="submit" value={"Cerca"}/>
-  </form>);
-};
-
-
 const Demo = (): JSX.Element => {
   const [data, setData] = useState({name: "activities_implementation", filter: ""});
 
@@ -127,11 +78,6 @@ const Demo = (): JSX.Element => {
         return <InputButton query_name={e}/>}) }
       <br/>
     </div>
-    <PostForm handleSubmit={formData => {
-        console.log(formData);
-        setData(formData);
-      }}></PostForm>
-
     {/*<TableSearch data={testdata}/>*/}
      {data && renderQuery(data)}
   </main>);

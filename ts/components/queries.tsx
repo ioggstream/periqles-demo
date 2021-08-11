@@ -50,6 +50,18 @@ export const queries = {
       `,
       options: {}
     },
+    dimensions_maturity: {
+      query: gql `
+        query DimensionsMaturity {
+          maturity {
+            dimension
+            level
+            score
+          }
+        }
+      `,
+      options: {}
+    },
     implementations: {
       query: gql `
         query Implementations($name: String) {

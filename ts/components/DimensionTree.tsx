@@ -4,7 +4,7 @@ import { gql, useQuery, useMutation } from '@apollo/client';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import jsx from 'react-syntax-highlighter/dist/esm/languages/prism/jsx';
 import js from 'react-syntax-highlighter/dist/esm/languages/prism/graphql';
-import TableComponent from './TableComponent';
+import TableSearch from './TableSearch';
 
 SyntaxHighlighter.registerLanguage('jsx', jsx);
 SyntaxHighlighter.registerLanguage('js', js);
@@ -43,7 +43,7 @@ const MyTable = () => {
               {loading ? <p>Loading data...</p> : null}
               {error ? <p>ERROR: {JSON.stringify(error)}</p> : null}
               {data && data.dimension 
-              ? <TableComponent data={data.dimension} />
+              ? <TableSearch data={data.dimension} />
               : <p>Sign up...</p>}
           </main>
       </section>
