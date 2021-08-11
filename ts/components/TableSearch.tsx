@@ -95,7 +95,7 @@ const flatten = (data) => {
   data.map((e) => {
     Object.keys(e).map((k) => {
       if (Array.isArray(e[k])) {
-        console.log("subfield", e[k]);
+        // console.log("subfield", e[k]);
         const renderer = get_renderer(e[k]);
         e[k].map((i) => strip__fields(i));
         e[k] = renderer(e[k]);
@@ -106,7 +106,7 @@ const flatten = (data) => {
 };
 //
 const getColumns = (data, parent = "") => {
-  console.log("getColumns", data);
+  console.debug("getColumns", data);
   return Object.keys(data[0]).filter((e) => !e.startsWith("__")).map((e) => {
     parent = parent
       ? parent + "."
@@ -129,11 +129,14 @@ const getColumns = (data, parent = "") => {
   });
 };
 
+function isEmpty(e){
+  return Boolean(Object.keys(Object(e)).length);
+}
 
 // Our table component
 export default function TableSearch({
   data,
-  onRowSelect = console.log
+  onRowSelect = console.log,
 }) {
   data = React.useMemo(() => flatten(data), []);
 
@@ -184,13 +187,18 @@ export default function TableSearch({
     nextPage,
     previousPage,
     setPageSize,
-    state
+    state,
   } = useTable({
-    columns, data, defaultColumn, // Be sure to pass the defaultColumn option
-    filterTypes
-  }, useFilters, // useFilters!
-      useGlobalFilter, // useGlobalFilter!
-      usePagination, useRowSelect, (hooks) => {
+    columns, 
+    data, 
+    defaultColumn, // defaultColumn has a filter enabled via DefaultColumnFilter
+    filterTypes,
+  }, 
+    useFilters, // useFilters!
+    useGlobalFilter, // useGlobalFilter!
+    usePagination, 
+    useRowSelect, 
+    (hooks) => {
     hooks.visibleColumns.push((columns) => [
       // Let's make a column for selection
       {
@@ -205,21 +213,27 @@ export default function TableSearch({
         Cell: ({row}) => {
             
             /**
-             * Override toggleRowSelected to update `done` on toggle.
+             * Override row.toggleRowSelected to update `done` on toggle.
              */
             const f = row.toggleRowSelected;
             row.toggleRowSelected = (e) => {
-                console.log("toggleRowSelected", e); 
+                state.changedRows = state.changedRows ? state.changedRows : {};
+                console.log("toggleRowSelected", row.values, e); 
+
                 if (e != Boolean(row.values.done)) {
                     row.values.done = e ? 1 : 0;
+                    state.changedRows[row.values.name] = row.values.done;
                 }
                 f(e);
             };
+
+            // Call toggleRowSelected when needed.
             const v = Boolean(row.values.done) || false;
-            console.log("selected:", v);
-            if (v && !row.getToggleRowSelectedProps().checked) {
-                row.toggleRowSelected(true);
+            console.debug("renderingSelectionColumn:", row.values.name, v);
+            if (v != row.getToggleRowSelectedProps().checked) {
+                row.toggleRowSelected(v);
             }
+
             const props = row.getToggleRowSelectedProps();
             console.debug("props", props);
             return (<div>
@@ -232,16 +246,13 @@ export default function TableSearch({
   });
 
   console.log("TableSearch: rendering table");
-  return (<> < pre > <code>
-    {
-      JSON.stringify({
-        selectedRowIds: state.selectedRowIds,
-        "selectedFlatRows[].original": selectedFlatRows.map((d) => d.original.name)
-      }, null, 2)
-    }
-  </code>
-</pre>
+  return (<>
+  {isEmpty(state.changedRows) && 
+    <button onClick={() => {
+      onRowSelect(state.changedRows)}
+      } className="action" value="CLICCAMI">SAVE</button>
 
+  }
 <table {...getTableProps()}>
   <thead>
     {
@@ -263,16 +274,17 @@ export default function TableSearch({
       <th colSpan={visibleColumns.length} style={{
           textAlign: "left"
         }}>
-        <GlobalFilter preGlobalFilteredRows={preGlobalFilteredRows} globalFilter={state.globalFilter} setGlobalFilter={setGlobalFilter}/>
+        <GlobalFilter preGlobalFilteredRows={preGlobalFilteredRows} 
+        globalFilter={state.globalFilter} setGlobalFilter={setGlobalFilter}/>
       </th>
     </tr>
   </thead>
   <tbody {...getTableBodyProps()}>
     {
       page.map((row, i) => {
-        console.log("preparing row: ", row);
+        console.debug("preparing row: ", row);
         prepareRow(row);
-        console.log("Prepared row:", row);
+        console.debug("Prepared row:", row);
         
         return (<tr {...row.getRowProps()}>
           {
@@ -319,5 +331,16 @@ disabled = {
   ">>"
 } </button>{" "}
         <span>Page </span > </div>
+
+
+         < pre > <code>
+    {
+      JSON.stringify({
+        selectedRowIds: state.selectedRowIds,
+        "selectedFlatRows[].original": selectedFlatRows.map((d) => d.original.name)
+      }, null, 2)
+    }
+  </code>
+</pre>
 </>);
 }

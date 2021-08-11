@@ -78,9 +78,7 @@ const PostForm = (props) => {
 
 
 const Demo = (): JSX.Element => {
-  const [done, setDone] = useState(true);
-
-  const [data, setData] = useState({name: "activities", filter: ""});
+  const [data, setData] = useState({name: "activities_implementation", filter: ""});
 
   const testdata = [
     {
@@ -115,13 +113,19 @@ const Demo = (): JSX.Element => {
       }]
     }
   ];
+
+  const InputButton = ({query_name}) => {
+    return (<input type="button" 
+            onClick={() => setData({name: query_name, filter: ""})} 
+            value={query_name}/>
+          )
+  }
+
   return (<main className="Demo">
-    <div id="client-switch">Show undone Show done</div>
     <div>
-      <input type="button" onClick={() => setData({name: "activities", filter: ""})} value="Activities"/>
-      <input type="button" onClick={() => setData({name: "implementations", filter: ""})} value="Implementations"/>
-      <input type="button" onClick={() => setData({name: "activities_implementation", filter: ""})
-} value="Activities with Implementation"/>
+      { Object.keys(queries).map((e) =>  {
+        return <InputButton query_name={e}/>}) }
+      <br/>
     </div>
     <PostForm handleSubmit={formData => {
         console.log(formData);

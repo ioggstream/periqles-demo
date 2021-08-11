@@ -1,7 +1,7 @@
 /* eslint-disable */
-import React, {useState} from "react";
-import {gql, useQuery, useMutation} from "@apollo/client";
-import {PrismLight as SyntaxHighlighter} from "react-syntax-highlighter";
+import React, { useState } from "react";
+import { gql, useQuery, useMutation } from "@apollo/client";
+import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
 import jsx from "react-syntax-highlighter/dist/esm/languages/prism/jsx";
 import js from "react-syntax-highlighter/dist/esm/languages/prism/graphql";
 import TableSearch from "./TableSearch";
@@ -10,16 +10,35 @@ import styled from "styled-components";
 SyntaxHighlighter.registerLanguage("jsx", jsx);
 SyntaxHighlighter.registerLanguage("js", js);
 
+export const TOGGLE_ACTIVITY = gql`
+mutation ToggleActivity($activity: String!){
+  toggleActivity(activity: $activity){
+    name
+    done
+  }
+}
+`;
+
+export const SET_ACTIVITY = gql`
+mutation SetActivity($activity: String!, $done: Boolean!){
+  setActivity(activity: $activity, done: $done){
+    name
+    done
+  }
+}
+`;
+
+
+
 export default function GQLTable({
   query,
   options = {}
 }) {
-  const [updated, setUpdate] = useState(false);
-  const {data, loading, error, refetch} = useQuery(query, options);
-  const [selectedRows, setSelectedRows] = useState([]);
+  const { data, loading, error, refetch } = useQuery(query, options);
+  const [setActivity, respObj] = useMutation(SET_ACTIVITY);
   console.log("query", query, "options", options);
 
-  const Styles = styled.div `
+  const Styles = styled.div`
     padding: 1rem;
 
     table {
@@ -62,12 +81,25 @@ export default function GQLTable({
         }
         {
           data && Object.entries(data)
-            ? (Object.entries(data).map((k, v) => 
-            <Styles>
-              <button onClick={() => console.log(selectedRows)} className="action"/>
-
-              <TableSearch data={k[1]} onRowSelect={(rows) => setSelectedRows(rows)}/>
-            </Styles>
+            ? (Object.entries(data).map((k, v) =>
+              <Styles>
+                <h1> View: {query.definitions[0].name.value} </h1>
+                <TableSearch data={k[1]} onRowSelect={
+                  (rows) => {
+                    console.log("passed", rows);
+                    rows && Object.keys(rows).map((activity) => {
+                      setActivity({
+                        variables: {
+                          activity: activity,
+                          done: rows[activity] ? true : false
+                        }
+                      })
+                      console.log(respObj);
+                    });
+                  }
+                }
+                />
+              </Styles>
             ))
             : (<p>Sign up...</p>)
         }
