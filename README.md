@@ -1,16 +1,25 @@
-<p align="center">
-<img src="/periqles-logo.png" alt="logo" width="300"/>
-</p>
+# DSOMM ORM Playground
 
-<h1 align="center">periqles</h1>
-<p align="center">
-  Painless forms for GraphQL.
-</p>
+This app is a minimal showcase for DSOMM ORM playground.
 
-This is a demo of [periqles](https://github.com/oslabs-beta/periqles/blob/main/README.md), a form library for GraphQL that supports Relay and Apollo clients.
+It shows in a searchable/toggable table the content of the DSOMM ORM database
+creaded by https://github.com/ioggstream/dsomm-orm.
 
-[See it deployed →](https://periqles.herokuapp.com/)
+# Running
 
-This repo uses Relay and Apollo clients side-by-side on the same Express server to demonstrate how to use periqles in either client. As such, it's a little bootstrappy on the backend; your own backend will probably look very different. Please consult [the periqles readme](https://github.com/oslabs-beta/periqles/blob/main/README.md) for documentation.
+Set the graphql backend url in Demo.tsx
 
-If there's anything else about periqles you'd like to see demonstrated, please write an [issue](https://github.com/oslabs-beta/periqles-demo/issues) or open a pull request.
+```
+// in Demo.tsx
+...
+
+let URI = "http://172.29.0.3:8000/";
+
+
+```
+
+Then run via docker-compose
+
+    docker-compose up web
+
+    

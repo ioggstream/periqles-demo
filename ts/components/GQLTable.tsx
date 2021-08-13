@@ -10,15 +10,6 @@ import styled from "styled-components";
 SyntaxHighlighter.registerLanguage("jsx", jsx);
 SyntaxHighlighter.registerLanguage("js", js);
 
-export const TOGGLE_ACTIVITY = gql`
-mutation ToggleActivity($activity: String!){
-  toggleActivity(activity: $activity){
-    name
-    done
-  }
-}
-`;
-
 export const SET_ACTIVITY = gql`
 mutation SetActivity($activity: String!, $done: Boolean!){
   setActivity(activity: $activity, done: $done){
@@ -29,12 +20,11 @@ mutation SetActivity($activity: String!, $done: Boolean!){
 `;
 
 
-
 export default function GQLTable({
   query,
-  options = {pollInterval: 500}
+  options
 }) {
-  const { data, loading, error, refetch } = useQuery(query, options);
+  const { data, loading, error, refetch } = useQuery(query,  options);  // {pollInterval: 1000} to refresh data every second.
   const [setActivity, respObj] = useMutation(SET_ACTIVITY);
   console.log("query", query, "options", options);
 
@@ -84,7 +74,7 @@ export default function GQLTable({
             ? (Object.entries(data).map((k, v) =>
               <Styles>
                 <h1> View: {query.definitions[0].name.value} </h1>
-                <TableSearch data={k[1]} onRowSelect={
+                <TableSearch data={k[1]} onSave={
                   (rows) => {
                     console.log("passed", rows);
                     rows && Object.keys(rows).map((activity) => {
@@ -96,13 +86,15 @@ export default function GQLTable({
                       })
                       console.log(respObj);
                     });
+
+                    // Reload data after changes.
                     setTimeout(() => {refetch()}, 1000);
                   }
                 }
                 />
               </Styles>
             ))
-            : (<p>Sign up...</p>)
+            : (<p>Cannot load data...</p>)
         }
       </main>
     </section>
