@@ -32,7 +32,7 @@ mutation SetActivity($activity: String!, $done: Boolean!){
 
 export default function GQLTable({
   query,
-  options = {}
+  options = {pollInterval: 500}
 }) {
   const { data, loading, error, refetch } = useQuery(query, options);
   const [setActivity, respObj] = useMutation(SET_ACTIVITY);
@@ -96,6 +96,7 @@ export default function GQLTable({
                       })
                       console.log(respObj);
                     });
+                    setTimeout(() => {refetch()}, 1000);
                   }
                 }
                 />

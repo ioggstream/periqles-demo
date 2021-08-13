@@ -140,7 +140,7 @@ export default function TableSearch({
   selectField = "done",
   onRowSelect = console.log,
 }) {
-  data = React.useMemo(() => flatten(data), []);
+  data = flatten(data);  // React.useMemo(() => flatten(data), []);
 
   console.log("TableSearch.data", data);
   const columns = React.useMemo(() => getColumns(data), []);
@@ -254,10 +254,7 @@ export default function TableSearch({
   console.log("TableSearch: rendering table");
   return (<>
     {isEmpty(state.changedRows) &&
-      <button onClick={() => {
-        onRowSelect(state.changedRows)
-      }
-      } className="action" value="CLICCAMI">SAVE</button>
+      <input type="button" onClick={() => { onRowSelect(state.changedRows) } } className="action" value="SAVE TABLE" />
 
     }
     <table {...getTableProps()}>
